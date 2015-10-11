@@ -25,7 +25,17 @@
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="@string/google_maps_key" />
-        <activity android:name=".MainActivity" >
+        <activity android:name=".CollapsingHeaderActivity"
+            android:label="CollapsingHeader"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".ScrollableListHeaderActivity"
+            android:label="ScrollableListHeader">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

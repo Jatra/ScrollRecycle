@@ -11,30 +11,51 @@ import android.view.View;
  */
 public class ScrollableHeaderRecycler extends RecyclerView {
 
-    View headerView;
+    private static final String TAG = ScrollableHeaderRecycler.class.getSimpleName();
+
+    private boolean isScrollingHeader;
+    private HeadedAdapter adapter;
 
     public ScrollableHeaderRecycler(Context context) {
-        super(context);
+        this(context, null, 0);
     }
 
     public ScrollableHeaderRecycler(Context context, AttributeSet attrs) {
-        super(context, attrs);
+        this(context, attrs, 0);
     }
 
     public ScrollableHeaderRecycler(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 
-    @Override
-    public boolean onInterceptTouchEvent(MotionEvent e) {
-        View view = findChildViewUnder(e.getX(), e.getY());
-        if (view == headerView) {
-            return false;
-        }
-        return super.onInterceptTouchEvent(e);
+    public void setAdapter(HeadedAdapter adapter) {
+        super.setAdapter(adapter);
+        this.adapter = adapter;
     }
 
-    public void setHeaderView(View headerView) {
-        this.headerView = headerView;
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent motionEvent) {
+        if (isScrollingHeader) {
+            if (isUpOrCancel(motionEvent)) {
+                isScrollingHeader = false;
+            }
+            return false;
+        }
+
+        if (childUnderEvent(motionEvent) instanceof HeadedAdapter.HeaderWrapper) {
+            isScrollingHeader = true;
+            return false;
+        }
+
+        return super.onInterceptTouchEvent(motionEvent);
     }
+
+    private View childUnderEvent(MotionEvent motionEvent) {
+        return findChildViewUnder(motionEvent.getX(), motionEvent.getY());
+    }
+
+    private boolean isUpOrCancel(MotionEvent e) {
+        return e.getAction() == MotionEvent.ACTION_UP || e.getAction() == MotionEvent.ACTION_CANCEL;
+    }
+
 }
