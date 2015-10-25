@@ -1,33 +1,39 @@
 package uk.co.jatra.scrollrecyclerchild;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
-
-import java.util.List;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 
 public class CollapsingHeaderActivity extends AppCompatActivity {
 
     private static final String TAG = CollapsingHeaderActivity.class.getSimpleName();
     private MapView mapView;
+    static final LatLng PERTH = new LatLng(-31.90, 115.86);
+    static final Place[] PLACES = new Place[]{
+        new Place("Perth", -31.90, 115.86, "Eastern Australia"),
+        new Place("Boston", 42.3601, -71.0589, "Eastern USA"),
+        new Place("London", 51.5072, 0.1275, "United Kingom"),
+        new Place("Falmer", 50.8603529,  -.084474, "Home of the Seagulls"),
+        new Place("Timbuktu", 16.7758, 3.0094, "Nice name"),
+        new Place("Camberley", 51.3350, -0.7420, "why?"),
+
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,35 +48,21 @@ public class CollapsingHeaderActivity extends AppCompatActivity {
         FrameLayout header = (FrameLayout) findViewById(R.id.header);
         header.addView(mapView);
 
-//        addFab();
+        setupPager();
 
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        //        addFab();
 
-        RecyclerView.Adapter adapter = new RecyclerView.Adapter() {
+    }
 
-                    List<String> data = new Data().getData();
+    private void setupPager() {
 
-                    @Override
-                    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-                        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-                        RelativeLayout view = (RelativeLayout) inflater.inflate(R.layout.item, parent, false);
-                        return new SimpleViewHolder(view);
-                    }
+        ViewPager pager = (ViewPager) findViewById(R.id.view_pager);
 
-                    @Override
-                    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-                        ((SimpleViewHolder) holder).setData(data.get(position));
-                    }
+        FragmentStatePagerAdapter adapter = new PagerAdapter(getSupportFragmentManager());
+        pager.setAdapter(adapter);
 
-                    @Override
-                    public int getItemCount() {
-                        return data.size();
-                    }
-                };
-
-
-        recyclerView.setAdapter(adapter);
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.sliding_tabs);
+        tabLayout.setupWithViewPager(pager);
     }
 
     @Override
@@ -105,9 +97,28 @@ public class CollapsingHeaderActivity extends AppCompatActivity {
             @Override
             public void onMapReady(GoogleMap googleMap) {
                 Log.d(TAG, "map ready");
+                addMarkers(googleMap);
             }
         });
         return mapView;
+    }
+
+    private void addMarkers(GoogleMap googleMap) {
+        int numPlaces = PLACES.length;
+        for (int i=0; i<numPlaces; i++) {
+            PLACES[i].placeOnMap(googleMap);
+        }
+//        Marker perth = googleMap.addMarker(new MarkerOptions()
+//                .title("Perth")
+//                .snippet("Somewhere in Australia")
+//                .position(PERTH));
+        googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                Log.d(TAG, "Maker clicked: "+marker.getTitle()+" "+marker.getId()+" "+marker.getSnippet());
+                return false;
+            }
+        });
     }
 
     @Override
@@ -134,31 +145,7 @@ public class CollapsingHeaderActivity extends AppCompatActivity {
         mapView.onDestroy();
     }
 
-    public static class SimpleViewHolder<T> extends RecyclerView.ViewHolder {
-        public Button button;
-        public TextView textview;
-
-        public SimpleViewHolder(RelativeLayout itemView) {
-            super(itemView);
-            textview = (TextView) itemView.findViewById(R.id.textView);
-            button = (Button) itemView.findViewById(R.id.button);
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-
-                    Intent intent = new Intent(v.getContext(), ScrollableListHeaderActivity.class);
-                    v.getContext().startActivity(intent);
-                }
-            });
-        }
-
-        public void setData(T data) {
-            button.setText(String.valueOf(data));
-            textview.setText(data.toString());
-        }
-    }
-
-//    private void addFab() {
+    //    private void addFab() {
 //        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 //        fab.setOnClickListener(new View.OnClickListener() {
 //            @Override

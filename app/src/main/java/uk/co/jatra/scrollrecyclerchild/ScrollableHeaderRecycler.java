@@ -11,10 +11,7 @@ import android.view.View;
  */
 public class ScrollableHeaderRecycler extends RecyclerView {
 
-    private static final String TAG = ScrollableHeaderRecycler.class.getSimpleName();
-
     private boolean isScrollingHeader;
-    private HeadedAdapter adapter;
 
     public ScrollableHeaderRecycler(Context context) {
         this(context, null, 0);
@@ -26,11 +23,6 @@ public class ScrollableHeaderRecycler extends RecyclerView {
 
     public ScrollableHeaderRecycler(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-    }
-
-    public void setAdapter(HeadedAdapter adapter) {
-        super.setAdapter(adapter);
-        this.adapter = adapter;
     }
 
     @Override

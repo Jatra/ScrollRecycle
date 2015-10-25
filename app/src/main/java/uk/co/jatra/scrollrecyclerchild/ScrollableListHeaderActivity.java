@@ -39,7 +39,7 @@ public class ScrollableListHeaderActivity extends AppCompatActivity {
     private MapView createMap(Bundle savedInstanceState) {
         MapView mapView = new MapView(this);
         mapView.onCreate(savedInstanceState);
-        mapView.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 600));
+        mapView.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 800));
         mapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(GoogleMap googleMap) {

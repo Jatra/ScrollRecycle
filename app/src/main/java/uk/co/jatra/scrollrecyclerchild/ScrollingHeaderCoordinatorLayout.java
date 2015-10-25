@@ -26,13 +26,13 @@ public class ScrollingHeaderCoordinatorLayout extends CoordinatorLayout {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent motionEvent) {
         View header = findViewById(R.id.header);
-        if (header != null && isPointInChildBounds(motionEvent, header)) {
+        if (isEventInChildBounds(header, motionEvent)) {
             return false;
         }
         return super.onInterceptTouchEvent(motionEvent);
     }
 
-    private boolean isPointInChildBounds(MotionEvent motionEvent, View header) {
-        return isPointInChildBounds(header, (int)motionEvent.getX(), (int)motionEvent.getY());
+    private boolean isEventInChildBounds(View header, MotionEvent motionEvent) {
+        return header != null && isPointInChildBounds(header, (int)motionEvent.getX(), (int)motionEvent.getY());
     }
 }
