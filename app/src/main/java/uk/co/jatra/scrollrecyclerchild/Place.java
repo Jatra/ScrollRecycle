@@ -8,7 +8,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 /**
  * Created by tim on 24/10/2015.
  */
-public class Place {
+public class Place implements Titled {
     private LatLng latLng;
     private String name;
     private String snippet;
@@ -24,6 +24,10 @@ public class Place {
                 .title(name)
                 .snippet(snippet)
                 .position(latLng));
+    }
+
+    public String getTitle() {
+        return name;
     }
 
 }

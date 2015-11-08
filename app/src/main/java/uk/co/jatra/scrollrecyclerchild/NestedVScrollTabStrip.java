@@ -1,36 +1,136 @@
 package uk.co.jatra.scrollrecyclerchild;
 
 import android.content.Context;
+import android.support.design.widget.TabLayout;
 import android.support.v4.view.NestedScrollingChild;
 import android.support.v4.view.NestedScrollingChildHelper;
-import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
-import android.view.MotionEvent;
 import android.widget.ScrollView;
 
 /**
- * Created by tim on 25/10/2015.
+ * Created by tim on 27/10/2015.
  */
-public class NestedScrollViewPager extends ViewPager implements NestedScrollingChild {
-
-
+public class NestedVScrollTabStrip extends TabLayout implements NestedScrollingChild {
+    private static final String TAG = NestedVScrollTabStrip.class.getSimpleName();
     private final NestedScrollingChildHelper helper;
 
-    public NestedScrollViewPager(Context context) {
+    public NestedVScrollTabStrip(Context context) {
         this(context, null);
     }
 
-    @Override
-    public boolean onInterceptTouchEvent(MotionEvent ev) {
-        boolean superReturn = super.onInterceptTouchEvent(ev);
-        return superReturn;
-    }
-
-    public NestedScrollViewPager(Context context, AttributeSet attrs) {
+    public NestedVScrollTabStrip(Context context, AttributeSet attrs) {
         super(context, attrs);
         helper = new NestedScrollingChildHelper(this);
         setNestedScrollingEnabled(true);
     }
+
+    int lastMotionY;
+    boolean isBeingDragged;
+
+//    @Override
+//    public boolean onInterceptTouchEvent(MotionEvent ev) {
+//        final int action = ev.getAction();
+//
+//        if ((action == MotionEvent.ACTION_MOVE) && (isBeingDragged)) {
+//            return true;
+//        }
+//
+//
+//        switch (action & MotionEvent.ACTION_MASK) {
+//            case MotionEvent.ACTION_MOVE: {
+//                /*
+//                 * mIsBeingDragged == false, otherwise the shortcut would have caught it. Check
+//                 * whether the user has moved far enough from his original down touch.
+//                 */
+//
+//                /*
+//                * Locally do absolute value. mLastMotionY is set to the x value
+//                * of the down event.
+//                */
+//                final int activePointerId = mActivePointerId;
+//                if (activePointerId == INVALID_POINTER) {
+//                    // If we don't have a valid id, the touch down wasn't on content.
+//                    break;
+//                }
+//
+//                final int pointerIndex = ev.findPointerIndex(activePointerId);
+//                if (pointerIndex == -1) {
+//                    Log.e(TAG, "Invalid pointerId=" + activePointerId
+//                            + " in onInterceptTouchEvent");
+//                    break;
+//                }
+//
+//                final int y = (int) ev.getY(pointerIndex);
+//                final int yDiff = (int) Math.abs(y - lastMotionY);
+//                if (yDiff > mTouchSlop) {
+//                    isBeingDragged = true;
+//                    lastMotionY = y;
+//                    initVelocityTrackerIfNotExists();
+//                    mVelocityTracker.addMovement(ev);
+//                    if (mParent != null) mParent.requestDisallowInterceptTouchEvent(true);
+//                }
+//                break;
+//            }
+//
+//            case MotionEvent.ACTION_DOWN: {
+//                final int x = (int) ev.getX();
+//                if (!inChild((int) x, (int) ev.getY())) {
+//                    isBeingDragged = false;
+//                    recycleVelocityTracker();
+//                    break;
+//                }
+//
+//                /*
+//                 * Remember location of down touch.
+//                 * ACTION_DOWN always refers to pointer index 0.
+//                 */
+//                lastMotionY = x;
+//                mActivePointerId = ev.getPointerId(0);
+//
+//                initOrResetVelocityTracker();
+//                mVelocityTracker.addMovement(ev);
+//
+//                /*
+//                * If being flinged and user touches the screen, initiate drag;
+//                * otherwise don't.  mScroller.isFinished should be false when
+//                * being flinged.
+//                */
+//                isBeingDragged = !mScroller.isFinished();
+//                break;
+//            }
+//
+//            case MotionEvent.ACTION_CANCEL:
+//            case MotionEvent.ACTION_UP:
+//                /* Release the drag */
+//                isBeingDragged = false;
+//                mActivePointerId = INVALID_POINTER;
+//                if (mScroller.springBack(mScrollX, mScrollY, 0, getScrollRange(), 0, 0)) {
+//                    postInvalidateOnAnimation();
+//                }
+//                break;
+//            case MotionEvent.ACTION_POINTER_DOWN: {
+//                final int index = ev.getActionIndex();
+//                lastMotionY = (int) ev.getX(index);
+//                mActivePointerId = ev.getPointerId(index);
+//                break;
+//            }
+//            case MotionEvent.ACTION_POINTER_UP:
+//                onSecondaryPointerUp(ev);
+//                lastMotionY = (int) ev.getX(ev.findPointerIndex(mActivePointerId));
+//                break;
+//        }
+//
+//        /*
+//        * The only time we want to intercept motion events is if we are in the
+//        * drag mode.
+//        */
+//
+//        boolean isBeingDraggedFromSuper =  super.onInterceptTouchEvent(ev);
+//        Log.d(TAG, "isBeingDraggedFromSuper: "+isBeingDraggedFromSuper);
+//        return isBeingDraggedFromSuper;
+//    }
+
+
 
     /**
      * Enable or disable nested scrolling for this view.
@@ -147,7 +247,7 @@ public class NestedScrollViewPager extends ViewPager implements NestedScrollingC
         return helper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow);
     }
 
-     @Override
+    @Override
     public boolean dispatchNestedFling(float velocityX, float velocityY, boolean consumed) {
         return helper.dispatchNestedFling(velocityX, velocityY, consumed);
     }

@@ -14,16 +14,22 @@ import android.widget.TextView;
 /**
  * Created by tim on 24/10/2015.
  */
-public class PagerAdapter extends FragmentStatePagerAdapter {
-    private static final int NUM_ITEMS = 20;
+public class PagerAdapter<T extends Titled> extends FragmentStatePagerAdapter {
 
-    public PagerAdapter(FragmentManager fragmentManager) {
+    private T[] data;
+
+    public PagerAdapter(FragmentManager fragmentManager, T[] data) {
         super(fragmentManager);
+        setData(data);
+    }
+
+    public void setData(T[] data) {
+        this.data = data;
     }
 
     @Override
     public int getCount() {
-        return NUM_ITEMS;
+        return data.length;
     }
 
     @Override
@@ -33,7 +39,7 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public CharSequence getPageTitle(int position) {
-        return Integer.toString(position);
+        return data[position].getTitle();
     }
 
     public static class ArrayListFragment extends Fragment {
