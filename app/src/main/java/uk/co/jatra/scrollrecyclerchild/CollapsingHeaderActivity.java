@@ -21,6 +21,7 @@ import com.google.android.gms.maps.GoogleMapOptions;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -44,6 +45,8 @@ public class CollapsingHeaderActivity extends AppCompatActivity {
     };
     private TabLayout tabLayout;
     private Handler handler;
+    private Marker selectedMarker;
+    private Boolean zoomAfterMove = Boolean.TRUE;
 
 
     @Override
@@ -76,6 +79,7 @@ public class CollapsingHeaderActivity extends AppCompatActivity {
             public void onTabSelected(TabLayout.Tab tab) {
                 String selected = tab.getText().toString();
                 Marker marker = markerByName.get(selected);
+                selectMarker(marker);
                 final LatLng markerPosition = marker.getPosition();
                 handler.post(new Runnable() {
                     @Override
@@ -146,8 +150,11 @@ public class CollapsingHeaderActivity extends AppCompatActivity {
     }
 
     private MapView createMap(Bundle savedInstanceState) {
-        GoogleMapOptions options = new GoogleMapOptions();
-        options.zoomControlsEnabled(true);
+        GoogleMapOptions options = new GoogleMapOptions()
+                .zoomControlsEnabled(true)
+                .compassEnabled(true)
+                .mapToolbarEnabled(true)
+                ;
         MapView mapView = new MapView(this, options);
         mapView.onCreate(savedInstanceState);
         mapView.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -155,6 +162,7 @@ public class CollapsingHeaderActivity extends AppCompatActivity {
             @Override
             public void onMapReady(GoogleMap googleMap) {
                 Log.d(TAG, "map ready");
+                googleMap.setMyLocationEnabled(true);
                 addMarkers(googleMap);
             }
         });
@@ -168,14 +176,12 @@ public class CollapsingHeaderActivity extends AppCompatActivity {
             Marker marker = PLACES[i].placeOnMap(googleMap);
             markerByName.put(PLACES[i].getTitle(), marker);
         }
-//        Marker perth = googleMap.addMarker(new MarkerOptions()
-//                .title("Perth")
-//                .snippet("Somewhere in Australia")
-//                .position(PERTH));
         googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
                 Log.d(TAG, "Maker clicked: " + marker.getTitle() + " " + marker.getId() + " " + marker.getSnippet());
+                zoomAfterMove = Boolean.FALSE;
+                selectMarker(marker);
                 String selectedTitle = marker.getTitle();
                 int tabCount = tabLayout.getTabCount();
                 for (int i = 0; i < tabCount; i++) {
@@ -187,6 +193,20 @@ public class CollapsingHeaderActivity extends AppCompatActivity {
                 return false;
             }
         });
+    }
+
+    private void selectMarker(Marker marker) {
+        if (selectedMarker != null) {
+            setMarkerColour(selectedMarker, BitmapDescriptorFactory.HUE_RED);
+            selectedMarker.hideInfoWindow();
+        }
+        selectedMarker = marker;
+        setMarkerColour(selectedMarker, BitmapDescriptorFactory.HUE_CYAN);
+        selectedMarker.showInfoWindow();
+    }
+
+    private void setMarkerColour(Marker marker, float hue) {
+        marker.setIcon(BitmapDescriptorFactory.defaultMarker(hue));
     }
 
     @Override
@@ -213,16 +233,30 @@ public class CollapsingHeaderActivity extends AppCompatActivity {
         mapView.onDestroy();
     }
 
-    private void animateToPosition(LatLng position) {
+    private synchronized void animateToPosition(LatLng position) {
         CameraPosition cameraPosition = CameraPosition.builder()
                 .target(position)
-                .zoom(10)
+                .zoom(14)
                 .build();
         final CameraUpdate update = CameraUpdateFactory.newCameraPosition(cameraPosition);
         mapView.getMapAsync(new OnMapReadyCallback() {
             @Override
-            public void onMapReady(GoogleMap googleMap) {
-                googleMap.animateCamera(update);
+            public void onMapReady(final GoogleMap googleMap) {
+                googleMap.animateCamera(update, new GoogleMap.CancelableCallback() {
+                    @Override
+                    public void onFinish() {
+                        if (zoomAfterMove.booleanValue()) {
+                            CameraUpdate zoom = CameraUpdateFactory.zoomTo(10f);
+                            googleMap.animateCamera(zoom, 2000, null);
+                        }
+                        zoomAfterMove = Boolean.TRUE;
+                    }
+
+                    @Override
+                    public void onCancel() {
+
+                    }
+                });
             }
         });
     }
